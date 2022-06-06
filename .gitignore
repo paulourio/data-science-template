@@ -10,4 +10,3 @@ __pycache__/
 *.vscode/
 develop/notebooks/
 !develop/notebooks/**/*.ipynb
-test/
