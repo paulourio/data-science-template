@@ -1,0 +1,2 @@
+poetry>=1.2.0b1
+poetry-dotenv-plugin>=0.1.0a2

@@ -1,0 +1,8 @@
+__pycache__/
+.hypothesis/
+.mypy_cache/
+.pytest_cache/
+.vscode/
+develop/
+pipeine/
+test/

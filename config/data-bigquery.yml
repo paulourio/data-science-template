@@ -1,0 +1,2 @@
+tables:
+  shakespeare: bigquery-public-data.samples.shakespeare

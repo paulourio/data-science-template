@@ -1,0 +1,13 @@
+__pycache__/
+.vscode/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+.ipynb_checkpoints/
+*.code-workspace
+*.dat
+*.egg-info/
+*.vscode/
+develop/notebooks/
+!develop/notebooks/**/*.ipynb
+test/
