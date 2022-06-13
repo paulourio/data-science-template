@@ -42,7 +42,6 @@ def make_job_config(config: Settings) -> QueryJobConfig:
         default_dataset=config.bigquery.dataset,
         labels=config.labels,
         priority=config.bigquery.priority,
-        parameter_mode='NAMED',
         use_legacy_sql=False,
         use_query_cache=config.bigquery.use_query_cache,
     )

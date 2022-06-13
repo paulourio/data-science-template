@@ -1,0 +1,33 @@
+#
+---
+description: >-
+  Summary of downloaded projects from PyPi.
+  Unique by (month, project).
+location: US
+# This partitioning is not adequate for the current table, but I left
+# it here to serve as an example.
+timePartitioning:
+  type: MONTH
+  field: month
+schema:
+  fields:
+    - name: month
+      type: DATE
+      mode: REQUIRED
+      description: Month of reference.
+    - name: project
+      type: STRING
+      mode: REQUIRED
+      description: PyPi Project name.
+    - name: downloads
+      type: INTEGER
+      mode: REQUIRED
+      description: Number of times the package was downloaded in this month.
+    - name: created_at
+      type: TIMESTAMP
+      mode: REQUIRED
+      description: Timestamp the row was created.
+    - name: updated_at
+      type: TIMESTAMP
+      mode: REQUIRED
+      description: Timestamp the row was updated.

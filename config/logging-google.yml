@@ -3,4 +3,4 @@ logging:
   level: INFO
   message_format: '%(asctime)s %(name)s:%(lineno)d %(levelname)s %(message)s'
   timestamp_format: '%m-%d %H:%M:%S'
-  loggers: {}
+  loggers: []

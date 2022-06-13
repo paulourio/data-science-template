@@ -1,2 +1,7 @@
 tables:
-  shakespeare: bigquery-public-data.samples.shakespeare
+  shakespeare:
+    id: bigquery-public-data.samples.shakespeare
+    type: external_table
+  pypi_downloads:
+    id: bigquery-public-data.pypi.downloads
+    type: external_table

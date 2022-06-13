@@ -19,6 +19,6 @@ singleton, and we rather use dynaconf.base.Settings directly.
 """
 # flake8: noqa
 from . import loaders
-from ._types import ConfigFormat
-from ._config import load_config, as_dict
-from ._exporter import export_config
+from ._load import load_config, as_dict
+from ._environment import Environment
+from ._export import ExportFormat, export

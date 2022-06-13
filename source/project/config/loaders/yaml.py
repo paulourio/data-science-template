@@ -1,4 +1,5 @@
 """YAML loader with support to nested references."""
+from multiprocessing.sharedctypes import Value
 from typing import Any, List, Optional
 import os
 
@@ -11,7 +12,7 @@ def load(obj: Settings,
          silent: bool = True,
          key: Optional[str] = None,
          filename: Optional[str] = None) -> None:
-    """Read and load single key or all keys from a source.
+    """Read and load single key or all keys from a YAML files.
 
     The argument env is effectively ignored.
     This loader handles two special cases anywhere in the YAML:
@@ -69,6 +70,7 @@ def _load(obj: Settings, files: List[str],
                 result = result[env]
             if key:
                 result = result[key]
+            print(result)
             obj.update(result, loader_identifier='custom_yaml', merge=True)
 
 
@@ -87,8 +89,13 @@ def _process(data: Any, dirname: str):
         for key, value in list(data.items()):
             value = _process(value, dirname)
             data[key] = value
+            # If you are trying to set a name with dot, hyphen, or two
+            # underscores, you should probably created another structure
+            # where this dotted/hyphened key becomes the value.
             if '.' in key:
                 raise ValueError('dotted names are not allowed: ' + key)
+            if '-' in key and not key.startswith('x-'):
+                raise ValueError('names with hyphen are not allowed: ' + key)
             if '__' in key:
                 raise ValueError(
                     'double underscores names are not allowed: ' + key)

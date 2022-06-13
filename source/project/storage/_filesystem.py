@@ -1,3 +1,4 @@
+from typing import Dict, Final
 import logging
 
 from gcsfs import GCSFileSystem
@@ -15,12 +16,19 @@ def filesystem():
     # https://www.googleapis.com/auth/devstorage.read_write
     scope = config.storage.scopes[0].split('.')[-1]
 
+    auth = config.storage.authentication
+    token = AUTH_METHOD[auth]
+
+    consistency = config.storage.consistency
+    if consistency is None:
+        consistency = 'none'
+
     fs = GCSFileSystem(
         project=config.gcp.project,
         access=scope,
-        token=config.storage.authentication,
-        consistency='md5',
-        cache_timeout=config.storage.cache_seconds,
+        token=token,
+        consistency=consistency,
+        cache_timeout=config.storage.cache_expiration_secs,
     )
 
     LOGGER.debug('Initialized Storage filesystem on %s with scopes %s.',
@@ -31,3 +39,9 @@ def filesystem():
 
 
 LOGGER = logging.getLogger(__name__)
+
+AUTH_METHOD: Final[Dict[str, str]] = {
+    'default': 'google_default',
+    'metadata': 'cloud',
+}
+"""Map storage.authentication to GCSFileSystem.token."""

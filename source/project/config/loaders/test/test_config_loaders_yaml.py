@@ -9,9 +9,11 @@ def test_config_loaders_yaml(tmpdir):
     bar = config_dir.join('bar.yml')
     fuz = config_dir.join('fuz.yml')
 
-    foo.write(b'a: {b: {key: foo, $ref: bar.yml}}\nother: [1]\n')
+    foo.write(b'a: {b: {key: foo, $ref: bar.yml}, f: x}\nother: [1]\n')
     bar.write(b'c: {d: true}\nother: [null, 0]\nx-a: 0\n')
-    fuz.write(b'a: {b: {key: value, other: [2]}}\nx-abc: null\n')
+    fuz.write((b'a: {b: {key: "@format {this.a.f}-value", '
+               b'other: [{"id": {"foo": 2}}]}}\n'
+               b'x-abc: null\n'))
 
     settings = Settings(
         settings_module=[str(foo), str(fuz)],  # bar is read indirectly.
@@ -25,10 +27,11 @@ def test_config_loaders_yaml(tmpdir):
     expected = {
         'A': {
             'b': {
-                'key': 'value',
+                'key': 'x-value',
                 'c': {'d': True},
-                'other': [None, 0, 2],
+                'other': [None, 0, {'id': {'foo': 2}}],
             },
+            'f': 'x',
         },
         'OTHER': [1],
     }

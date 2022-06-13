@@ -4,8 +4,13 @@ logging:
   message_format: '%(asctime)s %(name)s:%(lineno)d %(levelname)s %(message)s'
   timestamp_format: '%m-%d %H:%M:%S'
   loggers:
-    gcsfs: INFO
-    google.auth: INFO
-    google.cloud.bigquery.opentelemetry_tracing: WARNING
-    asyncio: INFO
-    urllib3: INFO
+    - name: gcsfs
+      level: INFO
+    - name: google.auth
+      level: INFO
+    - name: google.cloud.bigquery.opentelemetry_tracing
+      level: WARNING
+    - name: asyncio
+      level: INFO
+    - name: urllib3
+      level: INFO

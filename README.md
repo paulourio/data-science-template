@@ -6,14 +6,16 @@ occurs in an interactive environment with access to editing Python files and Jup
 
 ## Structure
 
-- `config/` — Collection of configuration files in YAML format.
-- `source/` — Code common to many components of the project.  When a specific module uses code from the source, it should copy it to the Docker image.
-- `scripts/` — General scripts for running specific tasks and helper tools for the project management.
-- `beam/` — Code specific for running Apache Beam pipelines.
-- `modeling/` — Code specific for modeling staging, typically code for the inference, optimization, and search of parameters and hyper-parameters. I separate it here because it runs as Vertex AI custom jobs.
-- `analysis/` — Jupyter Notebooks, scripts, and ad-hoc queries used in analyses.
-- `resources/` — Jinja2 template files rendered during configuration load.
-- `data/` — Results and reports. This folder is actually a copy or a "symbolic" link to a remote storage, such a Google Cloud Storage. This data folder never contains the actual data used by ETLs or modeling.  At most only small samples are stored here for development of beam pipelines. In this folder we mostly write and read reports and results.
+| Folder       | Description |
+| :---         | :---        |
+| `config/`    | Collection of configuration files in YAML format. |
+| `data/`      | Results and reports. This folder is actually a copy or a "symbolic" link to a remote storage, such a Google Cloud Storage. This data folder never contains the actual data used by ETLs or modeling.  At most only small samples are stored here for development of beam pipelines. In this folder we mostly write and read reports and results. |
+| `source/`    | Code common to many components of the project.  When a specific module uses code from the source, it should copy it to the Docker image. |
+| `beam/`      | Code specific for running Apache Beam pipelines. |
+| `analysis/`  | Jupyter Notebooks, scripts, and ad-hoc queries used in analyses. |
+| `experiments/`  | Code specific for modeling staging, typically code for the inference, optimization, and search of parameters and hyper-parameters. I separate it  here because it runs as Vertex AI custom jobs. |
+| `scripts/`   | General scripts for running specific tasks and helper tools for the project management. |
+| `resources/` | Jinja2 template files rendered during configuration load. |
 
 ## Configuration
 
@@ -99,7 +101,7 @@ env = export_config(
     format=ConfigFormat.ENVIRONMENT_VARIABLES,
     entries=('project', 'storage', 'bigquery', 'labels'),  # Optional
 )
-# env: Dict[str, str
+# env: Dict[str, str]
 # Use env mapping to include as environment variables of your container.
 ```
 
@@ -124,24 +126,26 @@ config = project.load_config()
 
 set the following environment variables:
 
-- `CONFIG_FORMAT` - One of `ConfigFormat` enum: `YAML_FILES`, `ENVIRONMENT_VARIABLES`, `COMMAND_LINE_ARGUMENTS`.
-- `DEFAULT_PROJECT_WORKSPACE` - value for workspace dimension.
-- `DEFAULT_PROJECT_LOGGING` - value for the logging dimension.
+| Environment Variable | Description |
+| :---                 | :---        |
+| `DEFAULT_APP_CONFIG_FORMAT` | One of `ConfigFormat` values:  `COMMAND_LINE_ARGUMENTS`, `ENVIRONMENT_VARIABLES`, `JSON`, `YAML_FILES`. |
+| `DEFAULT_APP_CONFIG_WORKSPACE` | String value for workspace dimension. |
+| `DEFAULT_APP_CONFIG_LOGGING`   | String value for the logging dimension. |
 
 Example for development:
 
 ```bash
-CONFIG_FORMAT=YAML_FILES
-DEFAULT_PROJECT_WORKSPACE=dev
-DEFAULT_PROJECT_LOGGING=local
+DEFAULT_APP_CONFIG_FORMAT=YAML_FILES
+DEFAULT_APP_PROJECT_WORKSPACE=dev
+DEFAULT_APP_PROJECT_LOGGING=local
 ```
 
 Example for production:
 
 ```bash
-CONFIG_FORMAT=ENVIRONMENT_VARIABLES
-DEFAULT_PROJECT_WORKSPACE=prod
-DEFAULT_PROJECT_LOGGING=google
+DEFAULT_APP_CONFIG_FORMAT=ENVIRONMENT_VARIABLES
+DEFAULT_APP_PROJECT_WORKSPACE=prod
+DEFAULT_APP_PROJECT_LOGGING=google
 ```
 
 ## Interaction with Google Cloud Platform

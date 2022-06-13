@@ -1,0 +1,20 @@
+pipeline:
+  steps:
+    - name: shakespeare-word-count
+      type: bigquery
+      depends_on:
+        - type: external_table
+          params:
+            table: '@format {this.tables.shakespeare.id}'
+      tags: [shakespeare]
+
+# Tables managed by this pipeline.
+tables:
+  word_count:
+    id: '@format {this.bigquery.dataset}.shakespeare_word_count'
+    properties_file: tables/word_count.yml
+    type: managed_table
+  pypi_downloads_summary:
+    id: '@format {this.bigquery.dataset}.pypi_downloads_summary'
+    properties_file: tables/pypi_downloads.yml
+    type: managed_table

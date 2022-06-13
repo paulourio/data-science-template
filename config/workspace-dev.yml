@@ -1,7 +1,7 @@
 # General Google Cloud Platform (GCP) configuration.
 gcp:
   # GCP Project name.
-  project: project-template
+  project: project-template-352322
 
 # Google Cloud BigQuery.
 bigquery:
@@ -12,13 +12,13 @@ bigquery:
   # Default location for jobs, datasets, and tables.
   location: US
   # Default dataset name within the GCP Project.
-  dataset: stage
+  dataset: '@format {this.gcp.project}.stage'
   # Dataset to be used for temporary resources.  Resources should be
   # deleted automatically after 3 days.
-  temp_dataset: stage
+  temp_dataset: '@format {this.gcp.project}.stage'
   # Dataset to be used for cached resources.  Resources should be
   # deleted automatically after 7 days.
-  cache_dataset: stage
+  cache_dataset: '@format {this.gcp.project}.stage'
   # Maximum bytes billed within a job.
   maximum_bytes_billed: 10737418240  # 10 MiB
   # Default priority.
@@ -30,10 +30,15 @@ bigquery:
 
 # Google Cloud Storage (GCS).
 storage:
-  # Authentication method, either google_default or cloud.
-  authentication: google_default
+  # Authentication method.
+  #  default
+  #    Default gcloud credentials, typically established after running
+  #    `gcloud login` in a terminal.
+  #  metadata
+  #    Query the internal metadata directly for a token. Works when
+  #    running in Google Compute Engine or Google Container Engine.
+  authentication: default
   # Authentication scopes.
-  # It must be a list of {'read_only', 'read_write', 'full_control'}.
   scopes:
     - https://www.googleapis.com/auth/devstorage.read_write
   # Bucket with lifecycle rule that deletes files after 3 days.
@@ -43,7 +48,11 @@ storage:
   # Cache expiration in seconds for object metadata.
   # Set <= 0 for no caching, null for no cache expiration.
   cache_expiration_secs: null
+  # Check method when writing files with filesystem.
+  # One of {null, 'size', 'md5'}.
+  consistency: md5
 
 # Labels for using on google cloud.
 labels:
   service: '@format {this.project.name}-service'
+  environment: deva

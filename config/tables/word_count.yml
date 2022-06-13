@@ -1,0 +1,24 @@
+# The table schema must match BigQuery's REST API's Table object:
+# https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#Table
+# Some fields are already populated and cannot be overridden:
+#  labels
+#    Initialized with {this.labels}.
+#  tableReference
+#    Initialized with `id` entry in the same depth of schema of the
+#    configuration file.
+---
+description: >-
+  Word count of shakespeare corpus.
+  Unique by word.
+location: US
+schema:
+  fields:
+    - name: word
+      type: STRING
+      mode: REQUIRED
+      description: A single unique word extracted from this corpus.
+    - name: word_count
+      type: INTEGER
+      mode: REQUIRED
+      description: >-
+        Total word case-insensitive occurrence count of this word.

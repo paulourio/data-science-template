@@ -1,0 +1,4 @@
+SELECT LOWER(word)     AS word,
+       SUM(word_count) AS word_count,
+  FROM `bigquery-public-data.samples.shakespeare`
+ GROUP BY 1

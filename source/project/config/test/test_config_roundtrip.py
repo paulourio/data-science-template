@@ -1,13 +1,15 @@
 from datetime import datetime
+from functools import reduce
 from string import ascii_lowercase, ascii_uppercase, digits, printable
+from unittest.mock import patch
 import os
+import sys
 
 from dynaconf.base import Settings
 from hypothesis import given
 from hypothesis.strategies import (
     booleans,
     characters,
-    composite,
     composite,
     datetimes,
     dictionaries,
@@ -19,9 +21,9 @@ from hypothesis.strategies import (
     recursive,
     text,
 )
-from numpy import isin
+import pytest
 
-from project.config import ConfigFormat, load_config, export_config, as_dict
+from project.config import ExportFormat, load_config, export, as_dict
 
 from environment import cleanup_environment
 
@@ -116,9 +118,9 @@ def nested_dictionaries(draw):
     return random_dict
 
 
+@pytest.mark.slow
 @given(nested_dictionaries())
 def test_export_round_trip(data):
-    print(data)
     cleanup_environment()
 
     cfg = Settings(
@@ -131,16 +133,49 @@ def test_export_round_trip(data):
     )
     cfg.update(data)
 
-    exported = export_config(cfg, format=ConfigFormat.ENVIRONMENT_VARIABLES)
+    exported = export(cfg, format=ExportFormat.ENVIRONMENT_VARIABLES)
 
     # Reading it back should give the original input.
     os.environ.update(exported)
 
-    config = load_config(format=ConfigFormat.ENVIRONMENT_VARIABLES)
+    config = load_config(
+        load_env=True,
+        load_yaml=False,
+        load_command_line=False,
+        load_validate=False,
+        load_verbose=True,
+    )
 
     # Dynaconf changes the case of settings, forcing upper case at
     # root level and lower case at other levels.  We compare it all
     # as lower case keys.
+    assert as_dict(config) == _lower_keys(data)
+
+    # Reset and test from command line.
+    cleanup_environment()
+
+    exported_map = export(cfg, format=ExportFormat.COMMAND_LINE_ARGUMENTS)
+    exported_args = reduce(lambda a, b: a + b,
+                           [[k, v] for k, v in exported_map.items()],
+                           [])
+
+    with patch.object(sys, 'argv', exported_args):
+        config = load_config(
+            load_env=False,
+            load_yaml=False,
+            load_command_line=True,
+            load_validate=False,
+            load_verbose=True,
+            ENVVAR_PREFIX_FOR_DYNACONF='App',
+        )
+
+    if as_dict(config) != _lower_keys(data):
+        print()
+        print(exported_args)
+        print()
+        print('read')
+        print(as_dict(config))
+
     assert as_dict(config) == _lower_keys(data)
 
 
@@ -154,4 +189,8 @@ def _lower_keys(data):
 
 VALID_CHARS = ascii_lowercase + ascii_uppercase + digits + '_'
 
-STRING_VALUES = text(characters(blacklist_categories=('C',)))
+STRING_VALUES = text(characters(
+    blacklist_categories=('C',),
+    # Dynaconf does not parse escaped sequences nor backspaces.
+    #blacklist_characters=('\\', '\r', '\n'),
+))

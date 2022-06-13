@@ -12,7 +12,7 @@ except ImportError:
 try:
     from google.cloud.logging import handlers as gcloud_handlers
 except ImportError:
-    gcloud_handlers = None
+    gcloud_handlers = None  # type: ignore
 
 
 def init_logging(config: Settings) -> None:
@@ -63,8 +63,8 @@ def _init_google(config):
 
 
 def _setup_loggers(config: Settings):
-    for name, level in config.logging.loggers.items():
-        logging.getLogger(name).setLevel(level)
+    for logger in config.logging.loggers:
+        logging.getLogger(logger['name']).setLevel(logger['level'])
 
 
 LOGGERS: Final[Dict[str, Callable[[Settings], None]]] = {
