@@ -1,0 +1,13 @@
+RAISE USING MESSAGE = 'DO NOT RUN OR EDIT THIS FILE DIRECTLY!';
+
+CREATE TEMPORARY TABLE word_count AS
+SELECT LOWER(word)     AS word,
+       SUM(word_count) AS word_count,
+  FROM `bigquery-public-data.samples.shakespeare`
+ GROUP BY 1;
+
+TRUNCATE TABLE `project-template-352322.stage.shakespeare_word_count`;
+
+INSERT INTO `project-template-352322.stage.shakespeare_word_count`
+SELECT *
+  FROM word_count;

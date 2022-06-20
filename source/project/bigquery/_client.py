@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 import logging
 
 from dynaconf.base import Settings
@@ -9,9 +10,10 @@ from project.config import load_config
 
 
 @lru_cache
-def client() -> Client:
+def client(config: Optional[Settings] = None) -> Client:
     """Return initialized BigQuery client."""
-    config = load_config()
+    if config is None:
+        config = load_config()
     return make_client(config)
 
 
@@ -38,8 +40,11 @@ def make_client(config: Settings) -> Client:
 
 def make_job_config(config: Settings) -> QueryJobConfig:
     """Return a BigQuery Job configuration for a config."""
+    project = config.gcp.project
+    dataset = config.bigquery.dataset
     job_config = QueryJobConfig(
-        default_dataset=config.bigquery.dataset,
+        default_dataset=f'{project}.{dataset}',
+
         labels=config.labels,
         priority=config.bigquery.priority,
         use_legacy_sql=False,

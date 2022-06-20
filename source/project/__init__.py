@@ -3,7 +3,7 @@
 from . import core
 from .config import load_config
 from .logging import init_logging
-from . import config, storage, bigquery
+from . import config, storage, bigquery, pipeline
 
 
 def init(**kwargs):

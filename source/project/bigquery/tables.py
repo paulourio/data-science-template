@@ -1,76 +1,113 @@
 """BigQuery Tables."""
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 import logging
-import os
 
 from dynaconf.base import Settings
-from google.cloud.bigquery import DatasetReference, Table, TableReference
-from project.config import Environment, load_config
 import google.cloud.bigquery
-import yaml
+
+import project
 
 
-def from_config(config: Settings, spec: Dict[str, Any]):
-    if spec['type'] == 'managed_table':
-        return ManagedTable(labels=dict(config.labels), **spec)
+def from_config(config: Settings, spec: Dict[str, Any]) -> 'Table':
+    """Return Table from configuration specification."""
+    table_type = spec['type']
+    params = spec.get('params', dict())
 
-    if spec['type'] == 'external_table':
-        return ExternalTable(**spec)
+    try:
+        if table_type == 'managed_table':
+            base = dict(
+                labels=dict(config.labels),
+                location=config.bigquery.location,
+            )
 
-    LOGGER.error('Unknown table specification: %r.', spec)
-    raise ValueError('unknown table specification')
+            properties = spec['params']['properties']
+            if not hasattr(properties, 'items'):
+                ptype = type(properties).__name__
+                raise TypeError('properties must be dict-like, got ' + ptype)
+
+            properties = project.core.dictionary.merge(base, properties)
+            params['properties'] = properties
+
+            return ManagedTable.from_spec(config, type=table_type,
+                                          params=params)
+
+        if table_type == 'external_table':
+            return ExternalTable(type=table_type, params=params)
+
+        if table_type == 'public_table':
+            return PublicTable(type=table_type, params=params)
+
+        LOGGER.error('Unknown table specification: %r.', spec)
+        raise ValueError('unknown table specification')
+    except Exception as err:
+        LOGGER.error('Failed to initialize table from spec %r: %s',
+                     spec, str(err))
+        raise ValueError('failed to initialize table from spec') from err
 
 
 @dataclass
 class Table:
     """BigQuery Table."""
 
-    id: str
-    type: str
-
-    @property
-    def project(self) -> str:
-        """Return GCP project location."""
-        return self.id.split('.')[0]
-
-    @property
-    def dataset(self) -> str:
-        """Return BigQuery dataset location."""
-        return self.id.split('.')[1]
-
-    @property
-    def name(self) -> str:
-        """Return BigQuery table name."""
-        return self.id.split('.')[2]
-
-    def as_table_ref(self) -> TableReference:
-        """Return as google's TableReference."""
-        ref = TableReference(
-            dataset_ref=DatasetReference(
-                project=self.project,
-                dataset_id=self.dataset,
-            ),
-            table_id=self.name,
-        )
-        return ref
+    type: str = field(repr=False)
+    params: Dict[str, Any] = field(repr=False)
 
 
 @dataclass
 class ExternalTable(Table):
+    """External table definition."""
 
-    pass
+    partitioning_column: Optional[str] = None
+
+    @classmethod
+    def from_spec(cls, config: Settings, spec: Dict[str, Any]):
+        pcol = spec.get('partitioning_column')
+        return cls(**spec, partitioning_column=pcol)
+
+
+@dataclass
+class PublicTable(Table):
+    """Table publicly managed by Google."""
+
+    partitioning_column: Optional[str] = None
+
+    @classmethod
+    def from_spec(cls, config: Settings, params: Dict[str, Any]):
+        partitioned_by = params.get('partitioning_column')
+        return cls(**params, partitioning_column=partitioned_by)
 
 
 @dataclass
 class ManagedTable(Table):
+    """Table managed by this project."""
 
-    labels: Dict[str, str]
-    properties_file: str
-    properties: Dict[str, Any] = field(default_factory=dict)
+    # location: str = field(repr=False)
+    # labels: Dict[str, str] = field(repr=False)
+    properties: Dict[str, Any] = field(repr=False)
+
+    @classmethod
+    def from_spec(cls, config: Settings, type: str, params: Dict[str, Any]):
+        """Return table according to the configuration and specification."""
+        params = params.copy()
+        properties = params['properties']
+
+        # default_project, default_dataset = config.bigquery.dataset.split('.')
+        # ref = properties['tableReference']
+        # ref['projectId'] = ref.get('projectId', default_project)
+        # ref['datasetId'] = ref.get('datasetId', default_dataset)
+
+        return cls(type=type, params=params, properties=properties)
+
+    @property
+    def id(self):
+        """Return the Standard SQL full table id."""
+        ref = self.table_ref()
+        project, dataset, table = ref.project, ref.dataset_id, ref.table_id
+        return f'{project}.{dataset}.{table}'
 
     def as_table(self) -> google.cloud.bigquery.Table:
+        """Return as BigQuery Table."""
         properties = self.properties.copy()
         for key in properties:
             if key not in KNOWN_FIELDS:
@@ -78,22 +115,18 @@ class ManagedTable(Table):
                     'Unknown BigQuery Table property field %s in %s.',
                     key, self.properties_file,
                 )
-        properties['tableReference'] = self.as_table_ref().to_api_repr()
-        properties['labels'] = self.labels
+
+        #properties['labels'] = self.labels
+        #properties['location'] = self.location
+
         return google.cloud.bigquery.Table.from_api_repr(properties)
 
-    def __post_init__(self):
-        config = Path(Environment.config_path())
-        pfile = config / self.properties_file
-        if not pfile.exists():
-            raise FileNotFoundError(
-                'properties file not found: ' + pfile.as_posix())
+    def table_ref(self) -> google.cloud.bigquery.TableReference:
+        data = self.properties['tableReference']
+        return google.cloud.bigquery.TableReference.from_api_repr(data)
 
-        with open(pfile.as_posix(), 'rt') as input:
-            self.properties = yaml.safe_load(input)
-
-        assert isinstance(self.labels, dict)
-        assert isinstance(self.properties, dict)
+    def __repr__(self):
+        return f'ManagedTable({self.id})'
 
 
 LOGGER = logging.getLogger(__name__)

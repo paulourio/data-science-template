@@ -1,0 +1,11 @@
+UPDATE {{ table_id(config.tables.pipeline.bookmark)|id }} AS t
+   SET t.finished_at   = finished_at
+ WHERE t.step_name     = step_name
+   AND t.bookmark_name = bookmark_name
+   AND t.started_at    = started_at;
+
+SELECT *
+  FROM {{ table_id(config.tables.pipeline.bookmark)|id }} AS t
+ WHERE t.step_name     = step_name
+   AND t.bookmark_name = bookmark_name
+   AND t.started_at    = started_at;

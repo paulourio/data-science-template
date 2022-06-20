@@ -1,0 +1,31 @@
+---
+description: >-
+  Get most recent bookmark entry.
+language: SQL
+routineType: PROCEDURE
+routineReference:
+  projectId: '@format {this.gcp.project}'
+  datasetId: '@format {this.bigquery.dataset}'
+  routineId: BOOKMARK_GET
+arguments:
+  - name: step_name
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: STRING
+  - name: bookmark_name
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: STRING
+  - name: id
+    argumentKind: FIXED_TYPE
+    mode: OUT
+    dataType:
+      typeKind: INT64
+  - name: tstamp
+    argumentKind: FIXED_TYPE
+    mode: OUT
+    dataType:
+      typeKind: TIMESTAMP
+definitionBody: '@template_file resources/routines/bookmark/get.bql'

@@ -1,5 +1,14 @@
 project:
   name: project-name
-  version: 1
+  # Semantic Versioning
+  version:
+    # Increment major on incompatible changes.
+    major: 1
+    # Increment minor on new functionality or refactoring to switch
+    # to new sources, keeping all the results compatible.
+    minor: 0
+    # Increment patch on bug fixes.
+    patch: 0
 
-data_dir: data/
+# Base path for the data directory.
+data_path: '@format {env[PROJECT_DATA_PATH]}/v{this.project.version.major}'

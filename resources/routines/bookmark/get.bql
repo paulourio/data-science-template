@@ -1,0 +1,6 @@
+SET (id, tstamp) = (
+SELECT MAX(id), MAX(tstamp)
+  FROM {{ table_id(config.tables.pipeline.bookmark)|id }}
+ WHERE finished_at IS NOT NULL
+   AND resetted_at IS     NULL
+);

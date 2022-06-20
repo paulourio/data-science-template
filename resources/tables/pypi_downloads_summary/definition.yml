@@ -1,9 +1,11 @@
-#
 ---
 description: >-
   Summary of downloaded projects from PyPi.
   Unique by (month, project).
-location: US
+tableReference:
+  projectId: '@format {this.gcp.project}'
+  datasetId: '@format {this.bigquery.dataset}'
+  tableId: pypi_downloads_summary
 # This partitioning is not adequate for the current table, but I left
 # it here to serve as an example.
 timePartitioning:

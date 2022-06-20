@@ -1,0 +1,20 @@
+RAISE USING MESSAGE = 'DO NOT RUN OR EDIT THIS FILE DIRECTLY!';
+
+DECLARE g_bookmark      TIMESTAMP;
+DECLARE g_next_bookmark TIMESTAMP;
+DECLARE g_entry_id      TIMESTAMP;
+
+CALL `project-template-352322.stage.BOOKMARK_GET`('pypi-downloads-summary', 'pypi.file_downloads.timestamp', NULL, g_bookmark_tstamp);
+
+CALL `project-template-352322.stage.BOOKMARK_OPEN`('pypi-downloads-summary', 'pypi.file_downloads.timestamp', NULL, g_next_bookmark, '5bac97ca-f016-11ec-b385-983b8fd613f7', g_entry_id);
+
+SELECT DATE_TRUNC(DATE(`timestamp`), MONTH) AS month,
+       project                              AS project,
+       COUNT(1)                             AS downloads,
+  FROM `bigquery-public-data.pypi.file_downloads`
+       TABLESAMPLE SYSTEM (0.001 PERCENT)
+ WHERE DATE(`timestamp`) >  g_bookmark
+   AND DATE(`timestamp`) <= g_next_bookmark
+ GROUP BY 1, 2;
+
+CALL `project-template-352322.stage.BOOKMARK_CLOSE`(g_entry_id);

@@ -1,4 +1,5 @@
 from typing import Final
+from pathlib import Path
 import os
 
 
@@ -21,25 +22,29 @@ class Environment:
         return _env_as_bool(os.environ['PROJECT_LOAD_COMMAND_LINE'])
 
     @staticmethod
-    def config_path() -> str:
+    def config_path() -> Path:
         """Return the relative path where YAML files are located."""
-        return os.environ.get('PROJECT_CONFIG_PATH', _DEFAULT_CONFIG_PATH)
+        config = os.environ.get('PROJECT_CONFIG_PATH', _DEFAULT_CONFIG_PATH)
+        return Path.cwd() / config
+
+    @staticmethod
+    def data_path() -> Path:
+        """Return the relative path where data files are located."""
+        data = os.environ.get('PROJECT_DATA_PATH', _DEFAULT_DATA_PATH)
+        return Path.cwd() / data
+
+    @staticmethod
+    def resources_path() -> Path:
+        """Return the relative path where data resources are located."""
+        resources = os.environ.get('PROJECT_RESOURCES_PATH',
+                                   _DEFAULT_RESOURCES_PATH)
+        return Path.cwd() / resources
 
     @staticmethod
     def variable_prefix() -> str:
         """Return the environment variable name prefix."""
         return os.environ.get('PROJECT_VARIABLE_PREFIX',
                               _DEFAULT_VARIABLE_PREFIX)
-
-    @staticmethod
-    def workspace() -> str:
-        """Return the workspace setting from the environment."""
-        return os.environ['PROJECT_WORKSPACE']
-
-    @staticmethod
-    def logging() -> str:
-        """Return the logging setting from the environment."""
-        return os.environ['PROJECT_LOGGING']
 
 
 def _env_as_bool(value: str) -> bool:
@@ -53,3 +58,7 @@ def _env_as_bool(value: str) -> bool:
 _DEFAULT_VARIABLE_PREFIX: Final = 'app'
 
 _DEFAULT_CONFIG_PATH: Final = 'config'
+
+_DEFAULT_DATA_PATH: Final = 'data'
+
+_DEFAULT_RESOURCES_PATH: Final = 'resources'

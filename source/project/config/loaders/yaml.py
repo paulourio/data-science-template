@@ -70,7 +70,6 @@ def _load(obj: Settings, files: List[str],
                 result = result[env]
             if key:
                 result = result[key]
-            print(result)
             obj.update(result, loader_identifier='custom_yaml', merge=True)
 
 

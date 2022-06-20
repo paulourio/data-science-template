@@ -1,0 +1,30 @@
+---
+description: >-
+  Managed tables validity metrics.
+  Unique by (step_name, metric_name, created_at).
+tableReference:
+  projectId: '@format {this.gcp.project}'
+  datasetId: '@format {this.bigquery.dataset}'
+  tableId: pipeline_metrics
+schema:
+  fields:
+    - name: step_name
+      type: STRING
+      mode: REQUIRED
+      description: Step name.
+    - name: metric_name
+      type: STRING
+      mode: REQUIRED
+      description: The name of the validity metric assessed.
+    - name: valid
+      type: INTEGER
+      mode: REQUIRED
+      description: Number of valid records examined.
+    - name: invalid
+      type: INTEGER
+      mode: REQUIRED
+      description: Number of invalid records examined.
+    - name: created_at
+      type: TIMESTAMP
+      mode: REQUIRED
+      description: Timestamp the metric was computed.

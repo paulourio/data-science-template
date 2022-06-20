@@ -1,0 +1,45 @@
+---
+description: >-
+  Incremental load bookmarks.
+  Unique by (step_name, bookmark_name, started_at).
+tableReference:
+  projectId: '@format {this.gcp.project}'
+  datasetId: '@format {this.bigquery.dataset}'
+  tableId: pipeline_bookmark
+schema:
+  fields:
+    - name: step_name
+      type: STRING
+      mode: REQUIRED
+      description: Step name.
+    - name: bookmark_name
+      type: STRING
+      mode: REQUIRED
+      description: Bookmark identifier name.
+    - name: id
+      type: INTEGER
+      mode: NULLABLE
+      description: Bookmarked identifier.
+    - name: tstamp
+      type: TIMESTAMP
+      mode: NULLABLE
+      description: Bookmarked timestamp.
+    - name: nrows
+      type: INTEGER
+      description: Number of rows in the delta output.
+    - name: started_at
+      type: TIMESTAMP
+      mode: REQUIRED
+      description: Timestamp the job started.
+    - name: finished_at
+      type: TIMESTAMP
+      mode: NULLABLE
+      description: Timestamp the job finished.
+    - name: resetted_at
+      type: TIMESTAMP
+      mode: NULLABLE
+      description: Timestamp of when the job has been resetted.
+    - name: correlation_id
+      type: STRING
+      mode: REQUIRED
+      description: Correlation ID to group all queries from a single execution.

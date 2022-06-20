@@ -1,0 +1,17 @@
+---
+description: >-
+  Update an execution bookmark entry to flag it as closed.
+  Field finished_at field of the bookmark entry is updated with the current time.
+language: SQL
+routineType: PROCEDURE
+routineReference:
+  projectId: '@format {this.gcp.project}'
+  datasetId: '@format {this.bigquery.dataset}'
+  routineId: BOOKMARK_CLOSE
+arguments:
+  - name: entry_id
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: STRING
+definitionBody: '@template_file resources/routines/bookmark/close.bql'

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 from pathlib import Path
-import logging
+import os
 import sys
 
 from dynaconf.base import Settings
@@ -9,6 +9,7 @@ from dynaconf.validator import ValidationError
 from project.cli.parser import parse_keyword_args_as_dict
 from ._environment import Environment
 from ._validator import validators
+from ._converters import register_converters
 
 
 def load_config(
@@ -23,10 +24,8 @@ def load_config(
 ) -> Settings:
     """Return initialized configuration.
 
-    Dimensions that are not specified are inferred from the context:
-
-    - workspace: value in environment variable PROJECT_WORKSPACE.
-    - logging: value in environment variable PROJECT_LOGGING.
+    When loading YAML files, environment variables with prefix
+    `PROJECT_DIMENSION_{dim}={value}` are always loaded.
 
     Parameters
     ----------
@@ -125,7 +124,7 @@ def as_dict(config: Settings) -> Dict[str, Any]:
 
 
 def _get_yaml_files(**dimensions: str) -> List[str]:
-    config = Path.cwd() / Environment.config_path()
+    config = Environment.config_path()
 
     if not config.is_dir():
         if not config.exists():
@@ -133,45 +132,41 @@ def _get_yaml_files(**dimensions: str) -> List[str]:
                 'config path does not exist: ' + str(config))
         raise FileNotFoundError('config path is not a dir: ' + str(config))
 
-    required_dimensions = {
-        'workspace': _infer(config, 'workspace'),
-        'logging': _infer(config, 'logging'),
-    }
+    files = dict(project=config / 'project.yml')
 
-    other_dimensions: Dict[str, Path] = {}
+    files.update(_dimensions_from_env(config))
 
-    files: List[Path] = [config / 'project.yml']
+    for dim, value in dimensions.items():
+        new_value = config / f'{dim}-{value}.yml'
+        existing_value = files.get(dim)
+        if new_value == existing_value:
+            continue
 
-    for key, value in dimensions.items():
-        path = config / f'{key}-{value}.yml'
-        if key in required_dimensions:
-            required_dimensions[key] = path
-        else:
-            other_dimensions[key] = path
+        files[dim] = new_value
 
-    files += required_dimensions.values()
-    files += other_dimensions.values()
+    for dim, fname in dimensions.items():
+        files[dim] = config / f'{dim}-{fname}.yml'
 
-    for path in files:
+    for path in files.values():
         if not path.is_file():
             raise FileNotFoundError('missing configuration file ' + str(path))
 
-    return [str(path) for path in files]
+    return [str(path) for path in files.values()]
 
 
-def _infer(path: Path, key: str) -> Path:
-    if key == 'workspace':
-        return _infer_workspace(path)
-    if key == 'logging':
-        return _infer_logging(path)
-    raise ValueError('no inference for ' + str(key))
+def _dimensions_from_env(config: Path) -> Dict[str, Path]:
+    prefix = 'PROJECT_DIMENSION_'
+    prefix_len = len(prefix)
+    result = dict()
+
+    for name, value in os.environ.items():
+        if not name.startswith(prefix):
+            continue
+
+        dim = name[prefix_len:].lower()
+        result[dim] = config / f'{dim}-{value}.yml'
+
+    return result
 
 
-def _infer_workspace(path: Path) -> Path:
-    workspace = Environment.workspace()
-    return path / f'workspace-{workspace}.yml'
-
-
-def _infer_logging(path: Path) -> Path:
-    logging_name = Environment.logging()
-    return path / f'logging-{logging_name}.yml'
+register_converters()

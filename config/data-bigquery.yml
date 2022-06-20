@@ -1,7 +1,21 @@
 tables:
-  shakespeare:
-    id: bigquery-public-data.samples.shakespeare
-    type: external_table
-  pypi_downloads:
-    id: bigquery-public-data.pypi.downloads
-    type: external_table
+  samples:
+    shakespeare:
+      type: public_table
+      params:
+        properties:
+          tableReference:
+            projectId: bigquery-public-data
+            datasetId: samples
+            tableId: shakespeare
+  pypi:
+    file_downloads:
+      type: public_table
+      params:
+        properties:
+          timePartitioning:
+            field: timestamp
+          tableReference:
+            projectId: bigquery-public-data
+            datasetId: pypi
+            tableId: file_downloads

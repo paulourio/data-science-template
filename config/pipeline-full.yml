@@ -2,19 +2,59 @@ pipeline:
   steps:
     - name: shakespeare-word-count
       type: bigquery
+      params:
+        query: '@template_file resources/tables/shakespeare_word_count/query.bql'
       depends_on:
-        - type: external_table
+        - type: table
           params:
-            table: '@format {this.tables.shakespeare.id}'
+            table: tables.samples.shakespeare
       tags: [shakespeare]
+    - name: pypi-downloads-summary
+      type: incremental_bigquery
+      params:
+        reset: '@template_file resources/tables/pypi_downloads_summary/reset.bql'
+        update: '@template_file resources/tables/pypi_downloads_summary/update.bql'
+        validate: '@template_file resources/tables/pypi_downloads_summary/validate.bql'
+        bookmarks:
+          timestamp: pypi.file_downloads.timestamp
+      depends_on:
+        - type: table
+          params:
+            table: tables.pypi.file_downloads
+      tags: [pypi]
 
 # Tables managed by this pipeline.
 tables:
-  word_count:
-    id: '@format {this.bigquery.dataset}.shakespeare_word_count'
-    properties_file: tables/word_count.yml
-    type: managed_table
+  pipeline:
+    bookmark:
+      type: managed_table
+      params:
+        properties: '@yaml_file resources/tables/pipeline/bookmark.yml'
+    metrics:
+      type: managed_table
+      params:
+        properties: '@yaml_file resources/tables/pipeline/metrics.yml'
+  shakespeare:
+    word_count:
+      type: managed_table
+      params:
+        properties: '@yaml_file resources/tables/shakespeare_word_count/definition.yml'
   pypi_downloads_summary:
-    id: '@format {this.bigquery.dataset}.pypi_downloads_summary'
-    properties_file: tables/pypi_downloads.yml
     type: managed_table
+    params:
+      properties: '@yaml_file resources/tables/pypi_downloads_summary/definition.yml'
+
+routines:
+  bookmark:
+    open:
+      type: stored_procedure
+      params:
+        properties: '@yaml_file resources/routines/bookmark/open.yml'
+    close:
+      type: stored_procedure
+      params:
+        properties: '@yaml_file resources/routines/bookmark/close.yml'
+    get:
+      type: stored_procedure
+      params:
+        properties: '@yaml_file resources/routines/bookmark/get.yml'

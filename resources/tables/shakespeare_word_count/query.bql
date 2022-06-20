@@ -1,0 +1,11 @@
+CREATE TEMPORARY TABLE word_count AS
+SELECT LOWER(word)     AS word,
+       SUM(word_count) AS word_count,
+  FROM {{ table_id(config.tables.samples.shakespeare)|id }}
+ GROUP BY 1;
+
+TRUNCATE TABLE {{ table_id(config.tables.shakespeare.word_count)|id }};
+
+INSERT INTO {{ table_id(config.tables.shakespeare.word_count)|id }}
+SELECT *
+  FROM word_count;

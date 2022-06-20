@@ -1,0 +1,52 @@
+# The routine schema must match BigQuery's REST API's Routine object:
+# https://cloud.google.com/bigquery/docs/reference/rest/v2/routines#Routine
+# Notes:
+#  routineReference
+#    Initialized with BigQuery's default project and dataset.
+#  definitionBody
+#    Initialized with materialized body from `body_file` entry.
+---
+description: >-
+  Insert an execution bookmark entry.
+  The output entry_id is set with a UUID.
+  Use this entry_id to update the bookmark.
+language: SQL
+routineType: PROCEDURE
+routineReference:
+  projectId: '@format {this.gcp.project}'
+  datasetId: '@format {this.bigquery.dataset}'
+  routineId: BOOKMARK_OPEN
+arguments:
+  - name: step_name
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: STRING
+  - name: bookmark_name
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: STRING
+  - name: id
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: INT64
+  - name: tstamp
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: TIMESTAMP
+  - name: correlation_id
+    argumentKind: FIXED_TYPE
+    mode: IN
+    dataType:
+      typeKind: STRING
+  - name: entry_id
+    argumentKind: FIXED_TYPE
+    mode: OUT
+    dataType:
+      typeKind: STRING
+# definitionBody may be the body contents directly or a file.
+# The contents are treated as Jinja2 templates, with access to `config`.
+definitionBody: '@template_file resources/routines/bookmark/open.bql'

@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Final
+from typing import Callable, Dict, Final, TypedDict
 import logging
 import sys
 
@@ -40,6 +40,7 @@ def _init_colored(config):
         datefmt=config.logging.timestamp_format,
         level=config.logging.level,
         stream=sys.stdout,
+        level_styles=LEVEL_STYLES,
     )
 
 
@@ -71,4 +72,18 @@ LOGGERS: Final[Dict[str, Callable[[Settings], None]]] = {
     'default': _init_default,
     'colored': _init_colored,
     'google': _init_google,
+}
+
+_LevelStyle = TypedDict('LevelStyle', bold=bool, color=str, faint=bool)
+
+LEVEL_STYLES: Final[Dict[str, _LevelStyle]] = {
+    'critical': {'bold': True, 'color': 'red'},
+    'debug': {'faint': True},
+    'error': {'color': 'red'},
+    'info': {},
+    'notice': {'color': 'magenta'},
+    'spam': {'color': 'green', 'faint': True},
+    'success': {'bold': True, 'color': 'green'},
+    'verbose': {'color': 'blue'},
+    'warning': {'color': 'yellow'},
 }

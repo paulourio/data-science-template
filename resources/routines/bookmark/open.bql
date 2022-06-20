@@ -1,0 +1,22 @@
+SET entry_id = GENERATE_UUID();
+
+INSERT INTO {{ table_id(config.tables.pipeline.bookmark)|id }}
+(
+    entry_id,
+    step_name,
+    bookmark_name,
+    id,
+    tstamp,
+    started_at,
+    correlation_id
+)
+VALUES
+(
+    entry_id,
+    step_name,
+    bookmark_name,
+    id,
+    tstamp,
+    CURRENT_TIMESTAMP(),
+    correlation_id
+);

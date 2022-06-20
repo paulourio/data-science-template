@@ -1,0 +1,18 @@
+DECLARE g_bookmark      TIMESTAMP;
+DECLARE g_next_bookmark TIMESTAMP;
+DECLARE g_entry_id      TIMESTAMP;
+
+{{ bookmarks.get_tstamp(step.params.bookmarks.timestamp, 'g_bookmark_tstamp') }}
+
+{{ bookmarks.open(step.params.bookmarks.timestamp, tstamp='g_next_bookmark', entry_id='g_entry_id') }}
+
+SELECT DATE_TRUNC(DATE(`timestamp`), MONTH) AS month,
+       project                              AS project,
+       COUNT(1)                             AS downloads,
+  FROM {{ table_id(config.tables.pypi.file_downloads)|id }}
+       TABLESAMPLE SYSTEM (0.001 PERCENT)
+ WHERE DATE(`timestamp`) >  g_bookmark
+   AND DATE(`timestamp`) <= g_next_bookmark
+ GROUP BY 1, 2;
+
+{{ bookmarks.close('g_entry_id') }}

@@ -90,6 +90,7 @@ convention = 'numpy'
 markers = [
     "slow",
 ]
+log_level = "DEBUG"
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

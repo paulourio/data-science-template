@@ -1,16 +1,20 @@
 # The table schema must match BigQuery's REST API's Table object:
 # https://cloud.google.com/bigquery/docs/reference/rest/v2/tables#Table
-# Some fields are already populated and cannot be overridden:
+# Some fields are already populated:
 #  labels
 #    Initialized with {this.labels}.
-#  tableReference
-#    Initialized with `id` entry in the same depth of schema of the
-#    configuration file.
+#    New items are merged.
+#  location
+#    Table location.
+#    Value is overridden.
 ---
 description: >-
   Word count of shakespeare corpus.
   Unique by word.
-location: US
+tableReference:
+  projectId: '@format {this.gcp.project}'
+  datasetId: '@format {this.bigquery.dataset}'
+  tableId: shakespeare_word_count
 schema:
   fields:
     - name: word
